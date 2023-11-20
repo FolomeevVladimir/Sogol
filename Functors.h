@@ -9,24 +9,24 @@
 #include <string>
 
 namespace sogol {
-	template<unsigned d, unsigned q>
+	template<int d, int q>
 	struct func {
-		virtual void operator()(sogol::Cell<d, q> &c, sogol::Vectorxd<d, unsigned> ind) = 0;
+		virtual void operator()(sogol::Cell<d, q> &c, sogol::Vectorxd<d, int> ind) = 0;
 	};
-	template<unsigned d, unsigned q>
+	template<int d, int q>
 	struct F: func<d,q> {
-		virtual void operator()(sogol::Cell<d, q> &c, sogol::Vectorxd<d, unsigned> ind) override {
+		virtual void operator()(sogol::Cell<d, q> &c, sogol::Vectorxd<d, int> ind) override {
 			std::cout << ind << " "<<c<<std::endl;
 		}
 	};
-	template<unsigned d, unsigned q>
+	template<int d, int q>
 	struct Settype : func<d, q> {
-		Vectorxd<d, unsigned> l;
-		Settype(Vectorxd<d, unsigned> L) {
+		Vectorxd<d, int> l;
+		Settype(Vectorxd<d, int> L) {
 			l = L;
 			std::cout << l << std::endl;
 		}
-		virtual void operator()(sogol::Cell<d, q> &c, sogol::Vectorxd<d, unsigned> ind) override {
+		virtual void operator()(sogol::Cell<d, q> &c, sogol::Vectorxd<d, int> ind) override {
 			
 			
 			if (ind[1] == l[1] - 1) { c.type = 2; }
@@ -38,20 +38,20 @@ namespace sogol {
 		}
 		
 	};
-	template<unsigned d, unsigned q>
+	template<int d, int q>
 	struct Save : func<d, q> {
-		sogol::BGK<sogol::D2Q9> bgk;
+		sogol::BGK<sogol::DQ<2,9>> bgk;
 		std::ofstream file;
-		Vectorxd<d, unsigned> l;
+		Vectorxd<d, int> l;
 		
-		void init(Vectorxd<d, unsigned> L, int rank) { 
+		void init(Vectorxd<d, int> L, int rank) { 
 			l = L;
 			std::string s = std::to_string(rank)+"u.csv";
 			
 			
 			file.open(s); }
 
-		virtual void operator()(sogol::Cell<d, q>& c, sogol::Vectorxd<d, unsigned> ind) override {
+		virtual void operator()(sogol::Cell<d, q>& c, sogol::Vectorxd<d, int> ind) override {
 			//if (ind[0]!=0&&ind[1]!=0&&ind[0]!=l[0]-1&& ind[1] != l[1] - 1) {
 			if (c.type==1){
 

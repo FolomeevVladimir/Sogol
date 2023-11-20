@@ -12,30 +12,31 @@
 #include "BC.h"
 #include "HPC.h"
 
-int main() {
 
+int main() {
+	
 
 
 	//auto x= sogol::Vectorxd<3, int>();
-	auto x = sogol::Vectorxd<2, double>();
-	using Vector2d = sogol::Vectorxd<2, double>;
+	auto x = sogol::Vectorxd<2, float>();
+	using Vector2d = sogol::Vectorxd<2, float>;
 	Vector2d y = Vector2d();
-	using d2q9 = sogol::D2Q9;
-	const unsigned d = d2q9::d, q = d2q9::q;
-	sogol::Vectorxd<d, unsigned> L = { 5,5 };
+	using d2q9 = sogol::DQ<2,9>;
+	const int d = d2q9::d, q = d2q9::q;
+	sogol::Vectorxd<d, int> L = { 10,10 };
 	sogol::HPC hpc;
-	sogol::Lattice<d2q9> grid(L,&hpc);
+	
 
 	
 	
 
 
-	sogol::BGK<d2q9> bgk;
+	using bgk=sogol::BGK<d2q9>;
 	sogol::Cell<2, 9> cell;
 
+	sogol::Lattice<d2q9, sogol::BGK<d2q9> > grid(L, &hpc);
 
-
-	grid.init(bgk, { 0.2,0. }, 1);
+	grid.init( { 0.1,0. }, 1);
 	sogol::Settype<2, 9> set(L);
 	sogol::F<2, 9> f;
 
@@ -43,36 +44,34 @@ int main() {
 	std::cout<<cell<< std::endl;
 	
 	auto start = std::chrono::system_clock::now();
-	for (unsigned i = 0; i < 1000; i++) {
-		//grid.collide_stream(bgk);
-		grid.collide(bgk);
-		grid.stream();
-		grid.applyBC();
+	grid.cuInit();
+	for (int i = 0; i < 10; i++) {
 		
+		
+		grid.cuRun();
+		grid.stream();
+		
+		grid.applyBC();
+		std::cout << "iteration=" << i << std::endl;
 		
 	}
 
 	auto end = std::chrono::system_clock::now();
-	std::chrono::duration<double> sec = end - start;
+	std::chrono::duration<float> sec = end - start;
 	std::cout << "time sec=" << sec.count() << std::endl;
-
 	sogol::Save<2, 9> save;
 	save.init(L, hpc.mpi_rank);
 	grid.iterate(save);
 
+	//std::cout << grid;
+	
 
 
-
-	double t1 = -1, t2 = hpc.mpi_rank;
-	hpc.swap(&t1, &t2);
-	std::cout << hpc.mpi_rank << "::" << t1 << "	" << t2 << "\n";
 
 	
-	if (hpc.mpi_rank == 0) {
-		grid.cuInit();
-		grid.cuRun();
-		}
-	hpc.exit();
+	
+	
+	//hpc.exit();
 
 	
 	

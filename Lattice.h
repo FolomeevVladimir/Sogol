@@ -13,56 +13,72 @@
 #include "HPC.h"
 #include "Engine.cuh"
 
+#include <concepts>
+
+
+
+template <typename T>
+concept Stencil =
+	requires(T s) {
+		{s.d}->std::same_as<int>;
+		{s.q}->std::same_as<int>;
+		{s.cs2}->std::same_as <float>;
+
+
+};
+
 namespace sogol {
 
-template<typename dq>
+template<typename dq,typename phys>
 class Lattice {
 public:
-	static constexpr unsigned d = dq::d, q = dq::q;
-	static constexpr unsigned half = (q - 1) / 2;
+	static constexpr int d = dq::d, q = dq::q;
+	static constexpr int half = (q - 1) / 2;
 	Cell<d,q> *c;
-	Vectorxd<d, unsigned> mask;
-	Vectorxd<d, unsigned> dims;
-	Vectorxd<d, unsigned> ind;
+	Vectorxd<d, int> mask;
+	Vectorxd<d, int> dims;
+	Vectorxd<d, int> ind;
 	std::vector<BC<dq>*> bcs;
 	int size;
 	sogol::HPC *hpc;
 	//obsolete
-	inline void do_for(unsigned k, func<d,q> &f) {
+	inline void do_for(int k, func<d,q> &f) {
 
 		if (k == d) {
 			f( (*this)(ind),ind);
 			return;
 		}
-		for (unsigned i = 0; i < dims[k]; i++) {
+		for (int i = 0; i < dims[k]; i++) {
 			ind[k] = i;
 			do_for(k + 1,f);
 		}
 	}
 	
 public:
-	inline Cell<d,q>& operator[] (unsigned i) {
+	inline Cell<d,q>& operator[] (int i) {
 		assert(i < size);
 		return c[i];
 	}
-	Lattice(Vectorxd<d, unsigned int> L,sogol::HPC* hp) {
+	Lattice(Vectorxd<d,  int> L,sogol::HPC* hp) {
+		std::cout << "size=" << L;
 		dims = L;
 		size = dims.conv();
+		std::cout << "size=" << size;
 		c = new Cell<d,q>[size];
 		mask = {};
 		ind = {};
 		hpc = hp;
 		
-		for (unsigned i = 0; i <d; i++) {
-			unsigned res = 1;
-			for (unsigned j = i + 1; j < d; j++) {
+		for (int i = 0; i <d; i++) {
+			int res = 1;
+			for (int j = i + 1; j < d; j++) {
 				res *= L[j];				
 			}
 			mask[i] = res;
 		}
 		std::cout << mask;
 	}
-	inline Cell<d, q>& operator() (Vectorxd<d, unsigned> p) {
+	inline Cell<d, q>& operator() (Vectorxd<d, int> p) {
 		assert((p * mask) < size);
 		return c[(p * mask)];
 	}
@@ -71,33 +87,33 @@ public:
 		
 		do_for(0,f);
 	}
-	void spatial_for(std::function<void(sogol::Cell<d, q> & c, sogol::Vectorxd<d, unsigned> ind)> f) {
+	void spatial_for(std::function<void(sogol::Cell<d, q> & c, sogol::Vectorxd<d, int> ind)> f) {
 
 		_for(0, f);
 	}
-	inline void _for(unsigned k, std::function<void(sogol::Cell<d, q> & c, sogol::Vectorxd<d, unsigned> ind)> f) {
+	inline void _for(int k, std::function<void(sogol::Cell<d, q> & c, sogol::Vectorxd<d, int> ind)> f) {
 
 		if (k == d) {
 			f((*this)(ind), ind);
 			return;
 		}
-		for (unsigned i = 0; i < dims[k]; i++) {
+		for (int i = 0; i < dims[k]; i++) {
 			ind[k] = i;
 			_for(k + 1, f);
 		}
 	}
-	void init(Dynamics<dq> &p,Vectorxd<d,double> u,double rho) {
+	void init(Vectorxd<d,float> u,float rho) {
 		for (int i = 0; i < size; i++) {
-			c[i].f = p.feq(u, rho);
+			c[i].f =  phys::feq(u, rho);
 		
 		}
-		auto per = new MPIexchange<dq>(this->mask, this->c, 3, { (int)dims[0],0},hpc);
+		auto per = new MPIexchange<dq>(this->mask, this->c, 3, { (int)dims[0],0 }, hpc);
 		bcs.push_back(per);
-		auto per2 = new MPIexchange<dq>(this->mask, this->c, 4, { -1*(int)dims[0],0},hpc);
+		auto per2 = new MPIexchange<dq>(this->mask, this->c, 4, { -1 * (int)dims[0],0 }, hpc);
 		bcs.push_back(per2);
 		std::cout << "period " << ((Periodic<dq>* )bcs[1])->period << std::endl;
 		
-		spatial_for([&](sogol::Cell<d, q>& c, sogol::Vectorxd<d, unsigned> ind) mutable{
+		spatial_for([&](sogol::Cell<d, q>& c, sogol::Vectorxd<d, int> ind) mutable{
 
 			if (ind[1] == dims[1] - 1) { c.type = 2; }
 			if (ind[1] == 0) { c.type = 2; }
@@ -108,11 +124,11 @@ public:
 	
 
 	}
-	void collide(Dynamics<dq>& p) {
-		Vectorxd<d, double> u;
-		double rho;
-		Vectorxd<q, double> feq;
-
+	void collide() {
+		Vectorxd<d, float> u;
+		float rho;
+		Vectorxd<q, float> feq;
+		std::cout << "size=" << size;
 #pragma omp parallel for
 		for (int i = 0; i < size; i++) {
 
@@ -120,7 +136,7 @@ public:
 
 			if (c[i].type != 2) {
 
-				p.collide(c[i]);
+				phys::collide(c[i]);
 
 				c[i].swap();
 			}
@@ -130,12 +146,12 @@ public:
 	void stream() {
 	
 		int next;
-		
+		std::cout << "size=" << size;
 		auto ck = dq::c;
 #pragma omp parallel for private(next)
 		for (int i = 0; i < size; i++) {
 			if (c[i].type == 1) {
-				for (unsigned k = 1; k <= half; k++) {
+				for (int k = 1; k <= half; k++) {
 					next = i + ck[k] * mask;
 					if (next < 0) { continue; }
 					if (next >= size) { continue; }
@@ -144,6 +160,7 @@ public:
 
 					assert(next >= 0);
 					assert(next < size);
+					//std::cout << c[i].opposite(k) << "swap" << c[next][k] << std::endl;
 					std::swap(c[i].opposite(k), c[next][k]);
 
 
@@ -154,10 +171,10 @@ public:
 	
 	}
 
-	void collide_stream(Dynamics<dq>& p) {
-		Vectorxd<d, double> u;
-		double rho;
-		Vectorxd<q, double> feq;
+	void collide_stream() {
+		Vectorxd<d, float> u;
+		float rho;
+		Vectorxd<q, float> feq;
 		auto ck = dq::c;
 
 		//#pragma omp parallel for
@@ -165,24 +182,24 @@ public:
 
 			if (c[i].type == 1) {
 
-				p.collide(c[i]);
+				phys::collide(c[i]);
 
 				//c[i].swap();
 			}
 			if (c[i].type == 3) {
 
-				p.collide(c[i]);
+				phys::collide(c[i]);
 
 				c[i].swap();
 			}
 			if (c[i].type == 4) {
 
-				p.collide(c[i]);
+				phys::collide(c[i]);
 
 				c[i].swap();
 			}
 			int next ;
-			for (unsigned k = 1; k <= half; k++) {
+			for (int k = 1; k <= half; k++) {
 				if (c[i].type !=1 ) { break; }
 				next = i + ck[k] * mask;
 				if (next < 0) { continue; }
@@ -204,33 +221,37 @@ public:
 			b->process();
 		}
 	}
-	inline void upwind_swap(int next, int i, unsigned k) {
-			double ftmp = c[i][k];
+	inline void upwind_swap(int next, int i, int k) {
+			float ftmp = c[i][k];
 			c[i][k] = c[i].opposite(k);
 			c[i].opposite(k) = c[next][k];
 			c[next][k] = ftmp;
 		}
 	void cuInit() {
-		if (hpc->mpi_rank == 0){
+		//if (hpc->mpi_rank == 0){
 			std::cout << "call initCu="<<(*hpc).mpi_rank<<"\n";
 			
-			auto cell=initCu<d,q>(c,size);
+			sogol::Cell<dq::d, dq::q>* cell=initCu<dq>(c,size);
 			delete[] c;
 			c = cell;
+			for (int i = 0; i < size; i++) {
+				std::cout << c[i];
+			}
+			for (auto b : bcs) {
+				b->cell=c;
+			}
 		
 
-		}
+		//}
 
 	}
 	void cuRun() {
-		if (hpc->mpi_rank == 0) {
+		//if (hpc->mpi_rank == 0) {
 			
-			runCu(c, size);
-			for (int i = 0; i < size; i++) {
-				std::cout << c[i] << "	";
-			}
+			runCu<dq,BGK<DQ<2,9>>>(c, size,mask);
+			
 
-		}
+		//}
 
 	}
 
@@ -243,7 +264,13 @@ public:
 
 };
 
-
+template<typename dq, typename phys>
+inline std::ostream& operator << (std::ostream& out, Lattice<dq, phys> grid) {
+	for (int i = 0; i < grid.size; i++) {
+		out << grid.c[i]<<" ";
+	};
+	return out;
+}
 
 
 

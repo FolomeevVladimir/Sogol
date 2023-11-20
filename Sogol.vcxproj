@@ -88,11 +88,16 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CudaCompile>
+      <AdditionalCompilerOptions>-std=c++20</AdditionalCompilerOptions>
+      <AdditionalOptions>-expt-relaxed-constexpr %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -103,6 +108,7 @@
       <OpenMPSupport>true</OpenMPSupport>
       <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\include;$(CudaToolkitIncludeDir)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -110,6 +116,10 @@
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\lib\debug;$(CudaToolkitLibDir);C:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\libC:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\lib\debug;C:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);impi.lib;impicxx.lib;cudart.lib;cudadevrt.lib;cudart_static.lib</AdditionalDependencies>
     </Link>
+    <CudaCompile>
+      <AdditionalCompilerOptions>-std=c++20</AdditionalCompilerOptions>
+      <AdditionalOptions>-expt-relaxed-constexpr %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -119,6 +129,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -126,6 +137,10 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <CudaCompile>
+      <AdditionalCompilerOptions>-std=c++20</AdditionalCompilerOptions>
+      <AdditionalOptions>-expt-relaxed-constexpr %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -138,6 +153,7 @@
       <OpenMPSupport>true</OpenMPSupport>
       <AdditionalOptions>/Zc:twoPhase- %(AdditionalOptions)</AdditionalOptions>
       <AdditionalIncludeDirectories>C:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\include;$(CudaToolkitIncludeDir)</AdditionalIncludeDirectories>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -147,6 +163,10 @@
       <AdditionalLibraryDirectories>C:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\lib\debug;$(CudaToolkitLibDir);C:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\libC:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\lib\release;C:\Program Files (x86)\Intel\oneAPI\mpi\2021.5.2\lib</AdditionalLibraryDirectories>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;%(AdditionalDependencies);impi.lib;impicxx.lib;cudart.lib;cudadevrt.lib;cudart_static.lib</AdditionalDependencies>
     </Link>
+    <CudaCompile>
+      <AdditionalCompilerOptions>-std=c++20</AdditionalCompilerOptions>
+      <AdditionalOptions>-expt-relaxed-constexpr %(AdditionalOptions)</AdditionalOptions>
+    </CudaCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />

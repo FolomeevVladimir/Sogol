@@ -5,28 +5,28 @@
 #include "Vectorxd.h"
 namespace sogol{
 
-template<unsigned d,unsigned q>
+template<int d,int q>
 struct Cell{
 
-	unsigned type;
-	sogol::Vectorxd<q, double> f;
+	int type;
+	sogol::Vectorxd<q, float> f;
 	
 	inline Cell() {
 		type = 1;
-		f=sogol::Vectorxd<q,double>();
+		f=sogol::Vectorxd<q,float>();
 	}
 	
-	inline Cell (std::initializer_list<double> list, unsigned t = 1) {
+	inline Cell (std::initializer_list<float> list, int t = 1) {
 		
 		assert(q == list.size()); 
 		type = t;
-		f=sogol::Vectorxd<q, double>(list);
+		f=sogol::Vectorxd<q, float>(list);
 	}
-	inline double& operator [] (unsigned i){
+	inline constexpr float& operator [] (int i){
 		assert(i < q);
 		return f[i];
 	}
-	inline double& opposite(unsigned i) {
+	inline constexpr float& opposite(int i) {
 		
 		assert(i >= 0);
 		assert(i < q);
@@ -34,21 +34,27 @@ struct Cell{
 		if (i <= (q - 1) / 2) { return f[i + (q - 1) / 2]; }
 		if (i > (q - 1) / 2) { return f[i - (q - 1) / 2]; }
 	}
-	inline void swap() {
-		for (unsigned i = 1; i <= (q - 1) / 2; i++) {
-			std::swap(f[i], f[i + (q - 1) / 2]);
+	constexpr inline void swap() {
+		for (int i = 1; i <= (q - 1) / 2; i++) {
+			float t = f[i + (q - 1) / 2];
+			f[i + (q - 1) / 2] = f[i];
+			f[i] = t;
+			//std::swap(f[i], f[i + (q - 1) / 2]);
 		}
 	}
-	inline void swap(Cell &c) {
-		for (unsigned i = 0; i <q; i++) {
-				std::swap(f[i ], c[i]);
+	constexpr inline void swap(Cell &c) {
+		for (int i = 0; i <q; i++) {
+			float t = c[i];
+			c[i] = f[i];
+			f[i] = t;
+			//	std::swap(f[i ], c[i]);
 		}
 	
 	}
 	
 
 };
-template<unsigned d,unsigned q>
+template<int d,int q>
 inline std::ostream& operator << (std::ostream& out, Cell<d,q> c) {
 	out << "type=" << c.type << " " << c.f;
 	return out;

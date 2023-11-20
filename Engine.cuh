@@ -1,6 +1,9 @@
 #pragma once
 #include "Cell.h"
-template<unsigned d,unsigned q>
-sogol::Cell<d, q>*  initCu(sogol::Cell<d, q> *c,int size);
-template<unsigned d, unsigned q>
-void runCu(sogol::Cell<d, q>* c, int size);
+#include "Physics.h"
+#include "Stencil.h"
+//#include "Vectorxd.h"
+template<typename dq>
+sogol::Cell<dq::d, dq::q>*  initCu(sogol::Cell<dq::d, dq::q> *c,int size);
+template<typename dq,typename p>
+void runCu(sogol::Cell<dq::d, dq::q>* c, int size, sogol::Vectorxd<dq::d, int> mask);

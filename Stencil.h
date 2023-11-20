@@ -1,29 +1,25 @@
 #pragma once
 #include "Vectorxd.h"
+//#include <concepts>
+
+
+
 
 
 namespace sogol {
 
-	template<unsigned D, unsigned Q>
-	struct Stencil {
-		static constexpr unsigned d = D;
-		static constexpr unsigned q = Q;
-		static double cs2;
-		static const Vectorxd<q, Vectorxd<d, int>> c;
-		static const Vectorxd<q, double> w;
-	};
 
-	struct D2Q9 :Stencil<2, 9> {
-		 static double constexpr cs2 = 1. / 3.;
-
-
-	
-	};
-	 Vectorxd<D2Q9::q, Vectorxd<D2Q9::d, int>> const D2Q9::c = {
+	template<int D, int Q>
+	struct DQ {
+		static constexpr int d = D;
+		static constexpr int q = Q;
+		static constexpr float cs2 = 1. / 3.;
+		static constexpr Vectorxd<q, Vectorxd<d, int>> c{
 	  { 0, 0},
 	  {-1, 1}, {-1, 0}, {-1,-1}, { 0,-1},
 	  { 1,-1}, { 1, 0}, { 1, 1}, { 0, 1}
-	 };
-	 Vectorxd<D2Q9::q, double> const D2Q9::w = { 4. / 9, 1. / 36, 1. / 9, 1. / 36, 1. / 9, 1. / 36, 1. / 9, 1. / 36, 1. / 9 };
-}
+		};
+		static constexpr Vectorxd<q, float> w = { 4. / 9, 1. / 36, 1. / 9, 1. / 36, 1. / 9, 1. / 36, 1. / 9, 1. / 36, 1. / 9 };
+	};
 
+}

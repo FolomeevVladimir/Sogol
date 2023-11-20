@@ -15,7 +15,7 @@ namespace sogol {
 		int dims[d];
 		int coords[d], coords_up[d], coords_down[d];
 		bool periods[d];
-		double tmp;
+		float tmp;
 		MPI::Status state;
 	public:
 		HPC(sogol::Vectorxd<d> per = {1}) {
@@ -40,13 +40,13 @@ namespace sogol {
 
 				
 		}
-		void swap(double* f,double* nextf) {
+		void swap(float* f,float* nextf) {
 			tmp = *nextf;
-			cartcomm.Send(f, 1, MPI::DOUBLE, up, 1);
-			cartcomm.Recv(nextf, 1, MPI::DOUBLE, down, 1, state);
+			cartcomm.Send(f, 1, MPI::FLOAT, up, 1);
+			cartcomm.Recv(nextf, 1, MPI::FLOAT, down, 1, state);
 
-			cartcomm.Send(&tmp, 1, MPI::DOUBLE, down, 2);
-			cartcomm.Recv(f, 1, MPI::DOUBLE, up, 2, state);
+			cartcomm.Send(&tmp, 1, MPI::FLOAT, down, 2);
+			cartcomm.Recv(f, 1, MPI::FLOAT, up, 2, state);
 			
 			
 		}
